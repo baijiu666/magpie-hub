@@ -3,56 +3,95 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ---------------------------------------------------------------
+   设计语言取自 usemagpie.ai：纯中性灰阶、黑底按钮、1px 细边框，
+   没有彩色渐变和堆叠阴影。变量名与其站点保持一致。
+   --------------------------------------------------------------- */
+
 :root {
   color-scheme: light;
-  --radius: 0.75rem;
-  --background: oklch(0.985 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.545 0.216 293);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.545 0.216 293);
+
+  --radius: 0.875rem;
+
+  --bg: #fafafa;
+  --bg-2: #f1f1f2;
+  --ink: #111112;
+  --ink-2: #4a4a50;
+  --ink-3: #85858c;
+  --line: #e4e4e7;
+  --code: #f4f4f5;
+  --card-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 12px 40px -12px rgba(0, 0, 0, 0.18);
+
+  /* shadcn 语义变量，全部指到上面的灰阶 */
+  --background: var(--bg);
+  --foreground: var(--ink);
+  --card: #ffffff;
+  --card-foreground: var(--ink);
+  --popover: #ffffff;
+  --popover-foreground: var(--ink);
+  --primary: var(--ink);
+  --primary-foreground: var(--bg);
+  --secondary: var(--bg-2);
+  --secondary-foreground: var(--ink);
+  --muted: var(--code);
+  --muted-foreground: var(--ink-3);
+  --accent: var(--bg-2);
+  --accent-foreground: var(--ink);
+  --destructive: #b42318;
+  --destructive-foreground: var(--bg);
+  --border: var(--line);
+  --input: var(--line);
+  --ring: var(--ink);
+  --chart-1: #111112;
+  --chart-2: #4a4a50;
+  --chart-3: #85858c;
+  --chart-4: #b9b9c0;
+  --chart-5: #e4e4e7;
 }
 
 .dark {
   color-scheme: dark;
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.62 0.2 293);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(1 0 0 / 12%);
-  --input: oklch(1 0 0 / 16%);
-  --ring: oklch(0.62 0.2 293);
+
+  --bg: #0b0b0c;
+  --bg-2: #121214;
+  --ink: #f2f2f3;
+  --ink-2: #b3b3ba;
+  --ink-3: #7a7a82;
+  --line: #26262a;
+  --code: #151517;
+  --card-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 20px 60px -20px rgba(0, 0, 0, 0.8);
+
+  --background: var(--bg);
+  --foreground: var(--ink);
+  --card: #161618;
+  --card-foreground: var(--ink);
+  --popover: #161618;
+  --popover-foreground: var(--ink);
+  --primary: var(--ink);
+  --primary-foreground: var(--bg);
+  --secondary: var(--bg-2);
+  --secondary-foreground: var(--ink);
+  --muted: var(--code);
+  --muted-foreground: var(--ink-3);
+  --accent: var(--bg-2);
+  --accent-foreground: var(--ink);
+  --destructive: #f97066;
+  --destructive-foreground: #0b0b0c;
+  --border: var(--line);
+  --input: var(--line);
+  --ring: var(--ink);
+  --chart-1: #f2f2f3;
+  --chart-2: #b3b3ba;
+  --chart-3: #7a7a82;
+  --chart-4: #4a4a50;
+  --chart-5: #26262a;
 }
 
 @theme inline {
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-  --font-mono: ui-monospace, "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI", system-ui, "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -72,38 +111,63 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-bg-2: var(--bg-2);
+  --color-code: var(--code);
+
+  --shadow-card: var(--card-shadow);
+
+  --radius-sm: calc(var(--radius) - 6px);
+  --radius-md: calc(var(--radius) - 4px);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --radius-xl: calc(var(--radius) + 2px);
+  --radius-2xl: calc(var(--radius) + 4px);
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
   }
+
   html {
-    scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
+    scroll-behavior: smooth;
+    scroll-padding-top: 80px;
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--ink) 16%, transparent) transparent;
   }
+
   @media (prefers-reduced-motion: reduce) {
     html {
       scroll-behavior: auto;
     }
   }
+
   body {
     @apply bg-background text-foreground antialiased;
-  }
-  ::selection {
-    @apply bg-primary/20;
+    font: 16px/1.6 var(--font-sans);
   }
 
-  /* 滚动条：默认那根又宽又亮的太抢眼，换成 4px 的细滑块，触屏直接不显示 */
-  html {
-    scrollbar-width: thin;
-    scrollbar-color: color-mix(in oklab, var(--foreground) 18%, transparent) transparent;
+  /* 中文标题不用西文那种大负字距，会挤在一起 */
+  h1,
+  h2,
+  h3 {
+    letter-spacing: -0.01em;
   }
+
+  ::selection {
+    background: color-mix(in srgb, var(--ink) 14%, transparent);
+  }
+
   ::-webkit-scrollbar {
     width: 10px;
     height: 10px;
@@ -113,14 +177,15 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background-color: color-mix(in oklab, var(--foreground) 18%, transparent);
+    background-color: color-mix(in srgb, var(--ink) 16%, transparent);
     background-clip: content-box;
     border: 3px solid transparent;
     border-radius: 9999px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background-color: color-mix(in oklab, var(--foreground) 34%, transparent);
+    background-color: color-mix(in srgb, var(--ink) 30%, transparent);
   }
+
   @media (hover: none), (pointer: coarse) {
     html {
       scrollbar-width: none;
@@ -131,11 +196,34 @@
   }
 }
 
+/* 参考站的标签：13px、加宽字距、灰、大写 */
+@utility eyebrow {
+  font-size: 13px;
+  line-height: 1.4;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 500;
+}
+
 /* 横向滚动的条（筛选 chip 等）永远不画滚动条 */
 @utility scrollbar-none {
   scrollbar-width: none;
   -ms-overflow-style: none;
   &::-webkit-scrollbar {
     display: none;
+  }
+}
+
+/* 参考站的 1px 分隔网格：靠 line 色做缝，卡片本身不带边框 */
+@utility hairline-grid {
+  display: grid;
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  overflow: hidden;
+  & > * {
+    background: var(--card);
   }
 }

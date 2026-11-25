@@ -52,17 +52,17 @@ export function Toolbar({
     <div className="space-y-2.5">
       <div className="flex items-center gap-2">
         <div className="relative min-w-0 flex-1">
-          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-3" />
           <Input
             value={query}
             onChange={(event) => onQueryChange(event.target.value)}
             placeholder="搜索插件、仓库、provider…"
             aria-label="搜索插件"
-            className="h-10 bg-card pl-9"
+            className="h-10 rounded-[10px] bg-card pl-9 text-[14px]"
           />
         </div>
         <Select value={sort} onValueChange={(value) => onSortChange(value as Sort)}>
-          <SelectTrigger className="h-10 w-[116px] shrink-0 bg-card sm:w-[132px]" aria-label="排序">
+          <SelectTrigger className="h-10 w-[116px] shrink-0 rounded-[10px] bg-card text-[13px] sm:w-[132px]" aria-label="排序">
             <SelectValue />
           </SelectTrigger>
           <SelectContent align="end">
@@ -73,7 +73,7 @@ export function Toolbar({
         </Select>
       </div>
 
-      <div className="scrollbar-none -mx-1 flex gap-1.5 overflow-x-auto px-1 pb-0.5">
+      <div className="scrollbar-none -mx-1 flex min-w-0 max-w-full gap-1.5 overflow-x-auto px-1 pb-0.5">
         {FILTERS.map((item) => {
           const active = filter === item.value;
           return (
@@ -85,8 +85,8 @@ export function Toolbar({
               className={cn(
                 "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs whitespace-nowrap transition-[color,background-color,border-color,transform] duration-150 active:scale-[0.97]",
                 active
-                  ? "border-primary/40 bg-primary/10 text-foreground"
-                  : "bg-card text-muted-foreground hover:text-foreground"
+                  ? "border-ink/30 bg-card font-medium text-ink shadow-[0_1px_2px_rgb(0_0_0_/_0.04)]"
+                  : "border-border bg-card text-ink-3 hover:border-ink/20 hover:text-ink"
               )}
             >
               {item.label}
@@ -97,7 +97,7 @@ export function Toolbar({
       </div>
 
       {authors.length > 1 && (
-        <div className="scrollbar-none -mx-1 flex items-center gap-1.5 overflow-x-auto px-1 pb-0.5">
+        <div className="scrollbar-none -mx-1 flex min-w-0 max-w-full items-center gap-1.5 overflow-x-auto px-1 pb-0.5">
           <button
             type="button"
             onClick={() => onOwnerFilterChange(null)}
@@ -105,8 +105,8 @@ export function Toolbar({
             className={cn(
               "inline-flex shrink-0 items-center rounded-full border px-3 py-1.5 text-xs whitespace-nowrap transition-[color,background-color,border-color,transform] duration-150 active:scale-[0.97]",
               ownerFilter === null
-                ? "border-primary/40 bg-primary/10 text-foreground"
-                : "bg-card text-muted-foreground hover:text-foreground"
+                ? "border-ink/30 bg-card font-medium text-ink shadow-[0_1px_2px_rgb(0_0_0_/_0.04)]"
+                : "border-border bg-card text-ink-3 hover:border-ink/20 hover:text-ink"
             )}
           >
             全部作者
@@ -123,8 +123,8 @@ export function Toolbar({
                 className={cn(
                   "inline-flex shrink-0 items-center gap-1.5 rounded-full border py-1 pl-1.5 pr-3 text-xs whitespace-nowrap transition-[color,background-color,border-color,transform] duration-150 active:scale-[0.97]",
                   active
-                    ? "border-primary/40 bg-primary/10 text-foreground"
-                    : "bg-card text-muted-foreground hover:text-foreground"
+                    ? "border-ink/30 bg-card font-medium text-ink shadow-[0_1px_2px_rgb(0_0_0_/_0.04)]"
+                    : "border-border bg-card text-ink-3 hover:border-ink/20 hover:text-ink"
                 )}
               >
                 <AuthorAvatar src={author.avatar} name={author.owner} className="size-5 rounded-full" />

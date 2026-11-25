@@ -177,7 +177,7 @@ export function IntroGate({ seconds, sample, canOpenInMagpie, isMobile }: IntroG
               initial={{ opacity: 0, y: 14, scale: 0.985 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-              className="w-full rounded-2xl border bg-card p-4 text-card-foreground shadow-2xl sm:p-6"
+              className="w-full rounded-[16px] border bg-card p-4 text-ink shadow-card sm:p-6"
             >
               <div className="flex items-center gap-2">
                 <AuthorAvatar src="owner.png" name="M" className="size-6 rounded-md border" />
@@ -190,7 +190,7 @@ export function IntroGate({ seconds, sample, canOpenInMagpie, isMobile }: IntroG
                 <section className="space-y-2">
                   <p className="text-sm font-medium">1 · 复制指令直接安装</p>
                   <div className="flex items-start gap-2">
-                    <code className="scrollbar-none min-w-0 flex-1 overflow-x-auto rounded-md bg-muted px-2.5 py-2 font-mono text-[11.5px] leading-relaxed whitespace-nowrap text-muted-foreground">
+                    <code className="scrollbar-none min-w-0 flex-1 overflow-x-auto rounded-lg border bg-code px-2.5 py-2 font-mono text-[11.5px] leading-relaxed whitespace-nowrap text-ink-2">
                       {install}
                     </code>
                     <Button
@@ -215,14 +215,14 @@ export function IntroGate({ seconds, sample, canOpenInMagpie, isMobile }: IntroG
                     </Button>
                   </div>
                   {onNpm && canOpenInMagpie && (
-                    <p className="text-xs text-muted-foreground">右侧按钮会在 magpie 里打开插件页，按 Install 完成。</p>
+                    <p className="text-xs text-ink-3">右侧按钮会在 magpie 里打开插件页，按 Install 完成。</p>
                   )}
                 </section>
 
                 <section className="space-y-2">
                   <p className="text-sm font-medium">2 · 遇到问题，直接把这段发给你的 AI</p>
                   <div className="relative">
-                    <pre className="max-h-[34dvh] overflow-auto rounded-md border bg-muted/40 p-3 pr-12 font-mono text-[11.5px] leading-relaxed break-words whitespace-pre-wrap">
+                    <pre className="max-h-[34dvh] overflow-auto rounded-lg border bg-bg-2 p-3 pr-12 font-mono text-[11.5px] leading-relaxed break-words whitespace-pre-wrap">
                       {prompt}
                     </pre>
                     <Tooltip>
@@ -254,7 +254,7 @@ export function IntroGate({ seconds, sample, canOpenInMagpie, isMobile }: IntroG
                   {!ready && (
                     <motion.span
                       aria-hidden
-                      className="absolute inset-y-0 left-0 bg-primary/25"
+                      className="absolute inset-y-0 left-0 bg-ink/12"
                       initial={{ width: "0%" }}
                       animate={{ width: "100%" }}
                       transition={{ duration: Math.max(seconds, 0.1), ease: "linear" }}

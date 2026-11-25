@@ -30,6 +30,7 @@ export interface Author {
 }
 
 export interface Snapshot {
+  generatedAt?: string;
   authors?: Author[];
   magpie?: { owner: string; avatar: string | null };
   plugins: Plugin[];

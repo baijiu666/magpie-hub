@@ -1,6 +1,8 @@
 {
   "title": "magpie hub",
   "heading": "公开仓库里的 magpie 插件",
+  "magpieVersion": "0.1.4812",
+  "magpieStableVersion": "0.1.4572",
   "sources": [
     {
       "provider": "github",
