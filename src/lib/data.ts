@@ -78,7 +78,7 @@ export async function fetchLive(owner: string): Promise<LiveRepo[]> {
   return repos;
 }
 
-export function fromLiveRepo(repo: LiveRepo, owner: string): Plugin {
+function fromLiveRepo(repo: LiveRepo, owner: string): Plugin {
   const description = repo.description ?? "";
   return {
     provider: "github",
@@ -103,7 +103,7 @@ export function fromLiveRepo(repo: LiveRepo, owner: string): Plugin {
 }
 
 /** 实时列表决定“有哪些仓库”，快照补齐版本号、中文简介和图标。 */
-export function mergeLive(repos: LiveRepo[], owner: string, previous: Plugin[]): Plugin[] {
+function mergeLive(repos: LiveRepo[], owner: string, previous: Plugin[]): Plugin[] {
   const byRepo = new Map(previous.map((plugin) => [plugin.repo, plugin]));
   return repos.filter(isPluginRepo).map((repo) => {
     const prev = byRepo.get(repo.name);

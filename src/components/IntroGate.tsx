@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { AppWindow, ArrowRight, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -76,6 +76,8 @@ export function IntroGate({ seconds, sample, canOpenInMagpie, isMobile }: IntroG
     return !hasSeen();
   });
   const [ready, setReady] = useState(seconds <= 0);
+  const [left, setLeft] = useState(seconds);
+  const reduceMotion = useReducedMotion();
   const rootRef = useRef<HTMLDivElement>(null);
   const prompt = buildPrompt(sample);
   const install = sample?.install ?? "magpie plugin add github:<作者>/<仓库>";
@@ -100,13 +102,25 @@ export function IntroGate({ seconds, sample, canOpenInMagpie, isMobile }: IntroG
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
+    setLeft(seconds);
+    const tick = window.setInterval(() => {
+      setLeft((value) => (value <= 1 ? 0 : value - 1));
+    }, 1000);
     const timer = window.setTimeout(() => setReady(true), Math.max(0, seconds) * 1000);
 
-    // 遮罩后面的页面全部 inert，键盘也走不出公告
-    const shells = Array.from(document.querySelectorAll<HTMLElement>("header, main, footer"));
-    shells.forEach((element) => {
-      element.inert = true;
-    });
+    const node = rootRef.current;
+    const parent = node?.parentElement ?? null;
+
+    // 遮罩后面的所有兄弟节点（含后面才挂载的滚动按钮）全部 inert
+    const setSiblingsInert = (inert: boolean) => {
+      const host = rootRef.current?.parentElement;
+      if (!host) return;
+      Array.from(host.children).forEach((element) => {
+        if (element !== rootRef.current) (element as HTMLElement).inert = inert;
+      });
+    };
+    setSiblingsInert(true);
+    const inertTimer = window.setInterval(() => setSiblingsInert(true), 300);
 
     const blockKeys = (event: KeyboardEvent) => {
       if (event.key === "Escape" || event.key === "Esc") {
@@ -134,8 +148,6 @@ export function IntroGate({ seconds, sample, canOpenInMagpie, isMobile }: IntroG
     document.addEventListener("keydown", blockKeys, true);
 
     // 被 hook / 脚本移除后自动挂回去（监听整棵 DOM，节点被谁摘掉都能发现）
-    const node = rootRef.current;
-    const parent = node?.parentElement ?? null;
     const observer = new MutationObserver(() => {
       const current = rootRef.current;
       if (!current || document.body.contains(current)) return;
@@ -148,10 +160,10 @@ export function IntroGate({ seconds, sample, canOpenInMagpie, isMobile }: IntroG
 
     return () => {
       window.clearTimeout(timer);
+      window.clearInterval(tick);
+      window.clearInterval(inertTimer);
       document.removeEventListener("keydown", blockKeys, true);
-      shells.forEach((element) => {
-        element.inert = false;
-      });
+      setSiblingsInert(false);
       observer.disconnect();
       document.body.style.overflow = previousOverflow;
     };
@@ -248,7 +260,7 @@ export function IntroGate({ seconds, sample, canOpenInMagpie, isMobile }: IntroG
                 <Button
                   className="group relative h-11 w-full overflow-hidden text-[15px]"
                   variant={ready ? "default" : "secondary"}
-                  disabled={!ready}
+                  disabled={!ready || !hasSample}
                   onClick={enter}
                 >
                   {!ready && (
@@ -257,18 +269,23 @@ export function IntroGate({ seconds, sample, canOpenInMagpie, isMobile }: IntroG
                       className="absolute inset-y-0 left-0 bg-primary/25"
                       initial={{ width: "0%" }}
                       animate={{ width: "100%" }}
-                      transition={{ duration: Math.max(seconds, 0.1), ease: "linear" }}
+                      transition={{ duration: reduceMotion ? 0 : Math.max(seconds, 0.1), ease: "linear" }}
                     />
                   )}
                   <span className="relative inline-flex items-center gap-2">
-                    {ready ? (
+                    {!hasSample ? (
+                      "正在载入插件列表…"
+                    ) : ready ? (
                       <>
                         进入插件列表
                         <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
                       </>
                     ) : (
-                      "正在载入…"
+                      "马上就好…"
                     )}
+                  </span>
+                  <span className="sr-only" aria-live="polite">
+                    {hasSample && !ready ? `还有 ${left} 秒` : ""}
                   </span>
                 </Button>
               </div>

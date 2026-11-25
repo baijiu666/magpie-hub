@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AuthorAvatar } from "@/components/AuthorAvatar";
 import type { Provider } from "@/lib/data";
+import { ownerKey } from "@/lib/keys";
 import { cn } from "@/lib/utils";
 
 export type Filter = "all" | "active" | "starred" | "paused";
@@ -34,7 +35,16 @@ export const FILTERS: { value: Filter; label: string }[] = [
   { value: "paused", label: "已停维护" }
 ];
 
-const keyOf = (author: AuthorOption) => `${author.provider}:${author.owner.toLowerCase()}`;
+const keyOf = (author: AuthorOption) => ownerKey(author.provider, author.owner);
+
+const chipClass = (active: boolean, extra = "") =>
+  cn(
+    "inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border text-xs transition-[color,background-color,border-color,transform] duration-150 active:scale-[0.97]",
+    extra,
+    active
+      ? "border-primary/40 bg-primary/10 text-foreground"
+      : "bg-card text-muted-foreground hover:text-foreground"
+  );
 
 export function Toolbar({
   query,
@@ -82,12 +92,7 @@ export function Toolbar({
               type="button"
               onClick={() => onFilterChange(item.value)}
               aria-pressed={active}
-              className={cn(
-                "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs whitespace-nowrap transition-[color,background-color,border-color,transform] duration-150 active:scale-[0.97]",
-                active
-                  ? "border-primary/40 bg-primary/10 text-foreground"
-                  : "bg-card text-muted-foreground hover:text-foreground"
-              )}
+              className={chipClass(active, "px-3 py-2")}
             >
               {item.label}
               <span className="tabular-nums opacity-60">{counts[item.value]}</span>
@@ -102,12 +107,7 @@ export function Toolbar({
             type="button"
             onClick={() => onOwnerFilterChange(null)}
             aria-pressed={ownerFilter === null}
-            className={cn(
-              "inline-flex shrink-0 items-center rounded-full border px-3 py-1.5 text-xs whitespace-nowrap transition-[color,background-color,border-color,transform] duration-150 active:scale-[0.97]",
-              ownerFilter === null
-                ? "border-primary/40 bg-primary/10 text-foreground"
-                : "bg-card text-muted-foreground hover:text-foreground"
-            )}
+            className={chipClass(ownerFilter === null, "px-3 py-2")}
           >
             全部作者
           </button>
@@ -120,12 +120,7 @@ export function Toolbar({
                 type="button"
                 onClick={() => onOwnerFilterChange(active ? null : key)}
                 aria-pressed={active}
-                className={cn(
-                  "inline-flex shrink-0 items-center gap-1.5 rounded-full border py-1 pl-1.5 pr-3 text-xs whitespace-nowrap transition-[color,background-color,border-color,transform] duration-150 active:scale-[0.97]",
-                  active
-                    ? "border-primary/40 bg-primary/10 text-foreground"
-                    : "bg-card text-muted-foreground hover:text-foreground"
-                )}
+                className={chipClass(active, "py-1.5 pl-1.5 pr-3")}
               >
                 <AuthorAvatar src={author.avatar} name={author.owner} className="size-5 rounded-full" />
                 {author.owner}

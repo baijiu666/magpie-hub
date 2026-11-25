@@ -237,37 +237,6 @@
     {
       "provider": "github",
       "owner": "MYCF711",
-      "repo": "magpie-plugin-scaffold",
-      "host": "github.com",
-      "repoUrl": "https://github.com/MYCF711/magpie-plugin-scaffold",
-      "displayName": "⚠ 未命名插件 Unnamed Plugin",
-      "description": "A magpie / OpenCode provider plugin scaffold: all nine hooks implemented in one file, plus the enforceable rules a provider plugin must pass — icon in two places, MIT license, no helper functions exported, no secrets. Clone it, implement five functions, run the check.",
-      "summary": "一句话：签入什么服务，用户得到什么。",
-      "version": "0.3.15",
-      "npmName": "unnamed-plugin",
-      "providers": [
-        "your-provider-id"
-      ],
-      "paused": false,
-      "stars": 7,
-      "topics": [
-        "boilerplate",
-        "checkin",
-        "magpie",
-        "magpie-plugin",
-        "opencode",
-        "opencode-plugin",
-        "provider",
-        "template"
-      ],
-      "updatedAt": "2026-11-20T15:26:16Z",
-      "npmVersion": null,
-      "icon": "data/icons/github-MYCF711-magpie-plugin-scaffold.png",
-      "install": "magpie plugin add github:MYCF711/magpie-plugin-scaffold"
-    },
-    {
-      "provider": "github",
-      "owner": "MYCF711",
       "repo": "magpie-officeace",
       "host": "github.com",
       "repoUrl": "https://github.com/MYCF711/magpie-officeace",
@@ -435,33 +404,6 @@
       "npmVersion": null,
       "icon": "data/icons/github-MYCF711-magpie-accio-auth.png",
       "install": "magpie plugin add github:MYCF711/magpie-accio-auth"
-    },
-    {
-      "provider": "github",
-      "owner": "3294798852",
-      "repo": "doubao-work-gateway",
-      "host": "github.com",
-      "repoUrl": "https://github.com/3294798852/doubao-work-gateway",
-      "displayName": "豆包工作 API 网关",
-      "description": "豆包工作跨平台 API 网关与 Magpie 供应商插件",
-      "summary": "插件的中英文使用说明、更新和问题反馈位于 magpie-doubao-work。Windows 和 Linux 使用相同安装命令。",
-      "version": "0.6.3",
-      "npmName": "doubao-work-gateway",
-      "providers": [],
-      "paused": false,
-      "stars": 7,
-      "topics": [
-        "doubao",
-        "doubao-work",
-        "linux",
-        "magpie",
-        "openai-compatible",
-        "windows"
-      ],
-      "updatedAt": "2026-11-14T05:42:23Z",
-      "npmVersion": null,
-      "icon": "data/icons/github-3294798852-doubao-work-gateway.png",
-      "install": "magpie plugin add github:3294798852/doubao-work-gateway"
     },
     {
       "provider": "github",
@@ -751,31 +693,6 @@
       "npmVersion": null,
       "icon": "data/icons/github-MYCF711-magpie-today.png",
       "install": "magpie plugin add github:MYCF711/magpie-today"
-    },
-    {
-      "provider": "github",
-      "owner": "MYCF711",
-      "repo": "magpie-registry",
-      "host": "github.com",
-      "repoUrl": "https://github.com/MYCF711/magpie-registry",
-      "displayName": "magpie-registry",
-      "description": "DEPRECATED - self-registration in the plugin supersedes this. See magpie-community/plugins#394.",
-      "summary": "DEPRECATED - self-registration in the plugin supersedes this. See magpie-community/plugins#394.",
-      "version": null,
-      "npmName": null,
-      "providers": [],
-      "paused": true,
-      "stars": 0,
-      "topics": [
-        "magpie",
-        "magpie-plugin",
-        "opencode",
-        "registry"
-      ],
-      "updatedAt": "2026-10-25T11:47:35Z",
-      "npmVersion": null,
-      "icon": null,
-      "install": "magpie plugin add github:MYCF711/magpie-registry"
     }
   ]
 }

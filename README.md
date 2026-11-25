@@ -4,7 +4,7 @@
 
 当前快照：GitHub `MYCF711`、Gitee `Ghandi`、GitHub `3294798852` 三个来源，收录 28 个插件（页面默认隐藏模板仓、旧注册表和网关仓，实际展示 25 个）。
 
-界面用 [shadcn/ui](https://github.com/shadcn-ui/ui) 的组件（Button / Card / Badge / Input / Dialog / Select / ToggleGroup / Switch / Tooltip / Sonner）搭，样式走 Tailwind CSS v4，没有手写组件。
+界面用 [shadcn/ui](https://github.com/shadcn-ui/ui) 的组件（Button / Card / Badge / Input / Dialog / Select / Switch / Tooltip / Sonner）搭，样式走 Tailwind CSS v4；筛选 chip 这类小组件是原生按钮 + Tailwind。
 
 ## 本地开发
 
@@ -33,7 +33,7 @@ npm run preview  # 本地预览产物
 
 3. 之后每次 push 自动构建发布，地址是 `https://<你的账号>.github.io/magpie-hub/`。
 
-如果这台机器连不上 `github.com:443`（只有 `api.github.com` 通），`git push` 会失败，用 `node scripts/push.mjs` 走 API 推送（把当前工作区打成一次提交，父提交取远端 HEAD，内容没变会自动跳过）。
+如果这台机器连不上 `github.com:443`（只有 `api.github.com` 通），`git push` 会失败，用 `node scripts/push.mjs` 走 API 推送：它把 **git 已跟踪的文件**打成一次提交（未 `git add` 的改动不会被带上），父提交取远端 HEAD，内容没变会自动跳过。
 
 不想用 Actions 的话，把 `dist/` 提交到 `gh-pages` 分支并在 Pages 里选该分支也可以（`vite.config.ts` 里 `base: "./"`，子路径部署不会丢资源）。
 
@@ -63,7 +63,7 @@ npm run preview  # 本地预览产物
 - 只收录**公开**仓库；私有仓匿名接口读不到，页面里也不会出现。
 - 插件图标取自仓库里的 `registry-entry.json` / `package.json`（`magpie.icon`），构建时缩到 96px PNG 存进 `public/data/icons/`，一张约 10KB；没有图标的用首字母渐变徽标兜底。
 - 实时同步走匿名 GitHub API：每 IP 每小时 60 次，超了页面提示并继续用快照。
-- 响应式：手机单列、平板两列、桌面三列；字号全部用 rem，浏览器放大缩小或调大默认字号都不会挤坏布局。
+- 响应式：手机单列、平板两列、桌面三列（320–1920 实测无横向溢出）；主要字号用 rem，个别极小字（徽标、脚注）用固定 px。
 - 作者头像（含 magpie 作者 yetone）在构建时下载到 `public/data/authors/`，页脚按 GitHub / Gitee 分组显示。
 - 工具栏三行：搜索 + 排序、状态筛选、作者筛选（都能横向滑动）；页面向下滚动后收紧成一条，点开恢复。
 - 动画用 [motion](https://github.com/motiondivision/motion)：公告入场、工具栏收起、回到顶部/到底部的缓动滚动。

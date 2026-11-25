@@ -14,6 +14,7 @@ import { installFor, isPaused, isPluginRepo } from "../shared/filters.mjs";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
 const UA = "magpie-hub-build (+https://github.com/baijiu666/magpie-hub)";
+const GH_TOKEN = process.env.GITHUB_TOKEN || process.env.GH_TOKEN || "";;
 const OUT_DIR = path.join(ROOT, "public", "data");
 // 先写到临时目录，整轮成功后再替换，抓取失败不会毁掉已提交的图标
 const ICON_DIR = path.join(OUT_DIR, ".icons-next");
@@ -21,6 +22,7 @@ const ICON_FINAL = path.join(OUT_DIR, "icons");
 
 const config = JSON.parse(await readFile(path.join(ROOT, "config.json"), "utf8"));
 const include = new Set((config.include ?? []).map(String));
+const exclude = new Set((config.exclude ?? []).map(String));
 const sources = (config.sources ?? [{ provider: "github", owner: config.owner }]).map((source) => ({
   provider: source.provider ?? "github",
   owner: source.owner ?? (source.repo ? source.repo.split("/")[0] : null),
@@ -30,7 +32,10 @@ const sources = (config.sources ?? [{ provider: "github", owner: config.owner }]
 /* ---------------- HTTP ---------------- */
 
 async function get(url, accept = "application/json") {
-  const res = await fetch(url, { headers: { "user-agent": UA, accept } });
+  const headers = { "user-agent": UA, accept };
+  // 有 token 就带上，匿名接口只有 60 次/小时
+  if (GH_TOKEN && url.startsWith("https://api.github.com")) headers.authorization = `Bearer ${GH_TOKEN}`;
+  const res = await fetch(url, { headers });
   if (!res.ok) throw new Error(`${res.status} ${res.statusText} — ${url}`);
   return res;
 }
@@ -67,7 +72,7 @@ async function listSource(source) {
   }
 
   const repos = [];
-  for (let page = 1; page <= 5; page++) {
+  for (let page = 1; page <= 10; page++) {
     const api =
       source.provider === "gitee"
         ? `https://gitee.com/api/v5/users/${source.owner}/repos?per_page=100&sort=updated&page=${page}`
@@ -274,7 +279,9 @@ for (const source of sources) {
   }
 
   const included = (repo) => include.has(`${source.owner}/${repo.name}`);
-  const picked = repos.filter((repo) => included(repo) || isPluginRepo(repo));
+  const picked = repos.filter(
+    (repo) => !exclude.has(repo.name) && (included(repo) || isPluginRepo(repo))
+  );
   const details = [];
   for (let i = 0; i < picked.length; i += 6) {
     const slice = picked.slice(i, i + 6);
@@ -306,15 +313,24 @@ for (const source of sources) {
 const authorDir = path.join(OUT_DIR, "authors");
 await mkdir(authorDir, { recursive: true });
 const authors = [];
+const profileCache = new Map();
+
+async function profileOf(provider, owner) {
+  const key = `${provider}:${owner}`;
+  if (!profileCache.has(key)) {
+    const api =
+      provider === "gitee"
+        ? `https://gitee.com/api/v5/users/${owner}`
+        : `https://api.github.com/users/${owner}`;
+    profileCache.set(key, json(api).catch(() => null));
+  }
+  return profileCache.get(key);
+}
 
 for (const source of sources.filter((item) => item.owner)) {
   let avatar = null;
   try {
-    const api =
-      source.provider === "gitee"
-        ? `https://gitee.com/api/v5/users/${source.owner}`
-        : `https://api.github.com/users/${source.owner}`;
-    const profile = await json(api);
+    const profile = await profileOf(source.provider, source.owner);
     if (profile?.avatar_url) {
       const res = await fetch(profile.avatar_url, { headers: { "user-agent": UA } });
       if (res.ok) {
@@ -355,12 +371,12 @@ try {
 /* npm 上有没有同名包：决定要不要显示 magpie:// 深链 */
 async function npmLatest(name) {
   try {
-    const res = await fetch(`https://registry.npmjs.org/${encodeURIComponent(name)}`, {
+    const res = await fetch(`https://registry.npmjs.org/${encodeURIComponent(name)}/latest`, {
       headers: { accept: "application/json" }
     });
     if (!res.ok) return null;
     const data = await res.json();
-    return data?.["dist-tags"]?.latest ?? null;
+    return data?.version ?? null;
   } catch {
     return null;
   }
@@ -374,7 +390,7 @@ await Promise.all(all.map(async (plugin) => {
 const primaryGithub = sources.find((source) => source.provider === "github" && source.owner)?.owner;
 if (primaryGithub) {
   try {
-    const user = await json(`https://api.github.com/users/${primaryGithub}`);
+    const user = await profileOf("github", primaryGithub);
     const res = await fetch(`${user.avatar_url}&s=128`, { headers: { "user-agent": UA } });
     if (res.ok) {
       await sharp(Buffer.from(await res.arrayBuffer()))

@@ -24,10 +24,12 @@ export function installTarget({ provider, owner, repo }) {
  * @param {{ provider: string, owner: string, repo: string }} plugin
  */
 export function installFor(plugin) {
-  return `magpie plugin add ${installTarget(plugin)}`;
+  return `${INSTALL_PREFIX} ${installTarget(plugin)}`;
 }
 
-export const PAUSED_RE = /停止维护|暂停维护|deprecated|归档|archived/i;
+export const INSTALL_PREFIX = "magpie plugin add";
+
+const PAUSED_RE = /停止维护|暂停维护|deprecated|归档|archived/i;
 
 /**
  * 是否已停维护：描述里写明，或者仓库本身归档了。

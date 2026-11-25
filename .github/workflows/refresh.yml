@@ -21,6 +21,8 @@ jobs:
 
       - run: npm ci
       - run: npm run data
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Commit snapshot
         run: |

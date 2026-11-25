@@ -1,6 +1,5 @@
 {
   "title": "magpie hub",
-  "heading": "公开仓库里的 magpie 插件",
   "sources": [
     {
       "provider": "github",

@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { applyLive, fetchLive, loadSnapshot, type Author, type Plugin } from "@/lib/data";
+import { ownerKey, pluginKey } from "@/lib/keys";
 import { readJson, readStringArray, storageKeys, writeJson } from "@/lib/storage";
 import { cn } from "@/lib/utils";
 
@@ -26,6 +27,8 @@ const config = siteConfig as {
   liveOnLoad: boolean;
   gateSeconds: number;
 };
+
+const GRID = "grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3";
 
 const defaultSources: SourceConfig[] = (config.sources ?? [])
   .filter((source) => source.owner)
@@ -61,6 +64,7 @@ export default function App() {
   const [panelExpanded, setPanelExpanded] = useState(false);
   const [scrolledDown, setScrolledDown] = useState(false);
   const [forceCollapsed] = useState(() => new URLSearchParams(location.search).get("panel") === "collapsed");
+  const [pendingFocus, setPendingFocus] = useState(false);
   const expandedAt = useRef(0);
 
   // 手机 / 平板：没有本机 magpie，一键安装只能退回复制命令
@@ -76,21 +80,21 @@ export default function App() {
   const [magpieOnline, setMagpieOnline] = useState(false);
   useEffect(() => {
     if (isMobile) return;
-    let timer = 0;
+    let stopped = false;
     const probe = () => {
       const controller = new AbortController();
-      timer = window.setTimeout(() => controller.abort(), 1500);
+      const timer = window.setTimeout(() => controller.abort(), 1500);
       fetch("http://127.0.0.1:3425/", { mode: "no-cors", signal: controller.signal })
-        .then(() => setMagpieOnline(true))
-        .catch(() => setMagpieOnline(false))
+        .then(() => !stopped && setMagpieOnline(true))
+        .catch(() => !stopped && setMagpieOnline(false))
         .finally(() => window.clearTimeout(timer));
     };
     probe();
     // magpie 可能稍后才启动，隔一会儿重探一次
     const interval = window.setInterval(probe, 20000);
     return () => {
+      stopped = true;
       window.clearInterval(interval);
-      window.clearTimeout(timer);
     };
   }, [isMobile]);
 
@@ -102,10 +106,17 @@ export default function App() {
       const delta = y - lastY;
       lastY = y;
       setScrolledDown(y > 200);
-      if (y < 60) {
+      const active = document.activeElement as HTMLElement | null;
+      const typingSearch = active?.getAttribute("aria-label") === "搜索插件";
+      if (y < 4) {
         if (!forceCollapsed) setPanelExpanded(false);
-      } else if (y > 200 && delta > 6 && Date.now() - expandedAt.current > 800) {
-        // 展开后 800ms 内不动它，避免刚展开就被自己的滚动事件收起（抽搐）
+      } else if (
+        y > 200 &&
+        delta > 6 &&
+        !typingSearch &&
+        Date.now() - expandedAt.current > 800
+      ) {
+        // 正在输入时不收起；展开后 800ms 内也不动它，避免自己触发自己
         setPanelExpanded(false);
       }
     };
@@ -117,6 +128,16 @@ export default function App() {
       window.clearInterval(timer);
     };
   }, []);
+
+  // 收起状态下按 /：面板是异步挂载的，等它渲染完再聚焦
+  useEffect(() => {
+    if (!pendingFocus) return;
+    const timer = window.setTimeout(() => {
+      document.querySelector<HTMLInputElement>('input[aria-label="搜索插件"]')?.focus();
+      setPendingFocus(false);
+    }, 30);
+    return () => window.clearTimeout(timer);
+  }, [pendingFocus, panelExpanded]);
 
   const siteRepo = config.repoUrl ?? "https://github.com/baijiu666/magpie-hub";
   const siteRepoOwner = siteRepo.split("/").filter(Boolean).slice(-2, -1)[0] ?? "repo";
@@ -145,7 +166,7 @@ export default function App() {
 
   const starSet = useMemo(() => new Set(stars), [stars]);
   const isStarred = (plugin: Plugin) =>
-    starSet.has(`${plugin.provider}:${plugin.owner.toLowerCase()}/${plugin.repo}`);
+    starSet.has(pluginKey(plugin));
 
   async function sync(list: SourceConfig[] = sources, silent = false) {
     const githubSources = list.filter((source) => source.provider === "github" && source.owner);
@@ -172,7 +193,8 @@ export default function App() {
 
     if (!silent) {
       if (done === 0) toast.error(lastError || "同步失败");
-      else if (done < githubSources.length) toast.warning(`同步了 ${done} 位作者，${lastError}`);
+      else if (done < githubSources.length)
+        toast.warning(`同步了 ${done} / ${githubSources.length} 位作者${lastError ? `：${lastError}` : ""}`);
       else {
         const giteeCount = list.filter((source) => source.provider === "gitee" && source.owner).length;
         toast.success(
@@ -191,15 +213,24 @@ export default function App() {
       const target = event.target as HTMLElement | null;
       const typing = target && /^(INPUT|TEXTAREA)$/.test(target.tagName);
       const dialogOpen = Boolean(document.querySelector('[role="dialog"]'));
-      if (event.key === "/" && !typing && !dialogOpen) {
+      const editable = target?.isContentEditable;
+      if (
+        event.key === "/" &&
+        !typing &&
+        !editable &&
+        !dialogOpen &&
+        !event.metaKey &&
+        !event.ctrlKey &&
+        !event.altKey
+      ) {
         event.preventDefault();
+        expandedAt.current = Date.now();
         setPanelExpanded(true);
-        window.requestAnimationFrame(() =>
-          document.querySelector<HTMLInputElement>('input[aria-label="搜索插件"]')?.focus()
-        );
+        setPendingFocus(true);
       }
-      if (event.key === "Escape" && typing && !dialogOpen) {
-        setQuery("");
+      if (event.key === "Escape" && !dialogOpen) {
+        if (typing) setQuery("");
+        else setPanelExpanded(false);
       }
     };
     window.addEventListener("keydown", onKey);
@@ -221,23 +252,21 @@ export default function App() {
       const fromUrl = new URLSearchParams(location.search).get("owner");
       if (fromUrl) {
         const owner = fromUrl.replace(/^@/, "").trim();
-        if (owner && !next.some((source) => source.owner === owner)) {
+        if (owner && !next.some((source) => source.owner.toLowerCase() === owner.toLowerCase())) {
           next = [{ provider: "github", owner }, ...next];
         }
       }
       setSources(next);
 
       const snapshot = await loadSnapshot();
-      const allowed = new Set(next.map((source) => `${source.provider}:${source.owner.toLowerCase()}`));
-      const kept = (snapshot?.plugins ?? []).filter((plugin) =>
-        allowed.has(`${plugin.provider}:${plugin.owner.toLowerCase()}`)
-      );
+      const allowed = new Set(next.map((source) => ownerKey(source.provider, source.owner)));
+      const kept = (snapshot?.plugins ?? []).filter((plugin) => allowed.has(ownerKey(plugin.provider, plugin.owner)));
       if (kept.length) {
         setPlugins(kept);
         setAuthors(snapshot?.authors ?? []);
         setMagpie(snapshot?.magpie ?? null);
       }
-      setLoading(false);
+      if (kept.length) setLoading(false);
 
       // 快照里没有的作者（刚在设置里加的）或开了自动同步，都需要拉一次
       const missingOwner = next.some(
@@ -253,6 +282,7 @@ export default function App() {
         const ok = await sync(next, true);
         if (!ok && !kept.length) toast.error("读取插件列表失败，点右上角「同步」重试");
       }
+      setLoading(false);
     })();
   }, []);
 
@@ -263,9 +293,7 @@ export default function App() {
   const pool = useMemo(
     () =>
       ownerFilter
-        ? visible.filter(
-            (plugin) => `${plugin.provider}:${plugin.owner.toLowerCase()}` === ownerFilter.toLowerCase()
-          )
+        ? visible.filter((plugin) => ownerKey(plugin.provider, plugin.owner) === ownerFilter)
         : visible,
     [visible, ownerFilter]
   );
@@ -322,7 +350,7 @@ export default function App() {
   }, [pool, query, filter, sort, starSet]);
 
   const toggleStar = useCallback((plugin: Plugin) => {
-    const id = `${plugin.provider}:${plugin.owner.toLowerCase()}/${plugin.repo}`;
+    const id = pluginKey(plugin);
     setStars((previous) => {
       const next = previous.includes(id) ? previous.filter((item) => item !== id) : [...previous, id];
       writeJson(storageKeys.stars, next);
@@ -336,9 +364,26 @@ export default function App() {
     writeJson(storageKeys.live, nextLive);
     setSources(nextSources);
     setLiveOnLoad(nextLive);
-    setSettingsOpen(false);
 
-    setOwnerFilter(null);
+    if (ownerFilter) {
+      const [provider, owner] = ownerFilter.split(":");
+      const stillThere = nextSources.some(
+        (source) => source.provider === provider && source.owner.toLowerCase() === owner
+      );
+      if (!stillThere) setOwnerFilter(null);
+    }
+    // 作者被移除后，他的收藏也一起清掉
+    setStars((previous) => {
+      const kept = previous.filter((id) => {
+        const [provider, rest] = id.split(":");
+        const owner = rest?.split("/")[0] ?? "";
+        return nextSources.some(
+          (source) => source.provider === provider && source.owner.toLowerCase() === owner
+        );
+      });
+      if (kept.length !== previous.length) writeJson(storageKeys.stars, kept);
+      return kept;
+    });
     setPlugins((previous) =>
       previous.filter((plugin) =>
         nextSources.some(
@@ -349,6 +394,7 @@ export default function App() {
     );
 
     await sync(nextSources);
+    setSettingsOpen(false);
   }
 
   function handleReset() {
@@ -438,8 +484,6 @@ export default function App() {
 
           <div
             className="sticky top-14 z-30 -mx-4 bg-background/90 px-4 py-2.5 backdrop-blur sm:top-16 sm:-mx-6 sm:px-6"
-            data-collapsed={collapsed}
-            data-scrolled={scrolledDown}
           >
             <div className="relative">
               {collapsed && (
@@ -449,6 +493,8 @@ export default function App() {
                   expandedAt.current = Date.now();
                   setPanelExpanded(true);
                 }}
+                aria-expanded={!collapsed}
+                aria-controls="filter-panel"
                 className="flex h-10 w-full items-center gap-2 rounded-full border bg-card px-3.5 text-xs text-muted-foreground shadow-sm"
               >
                 <SlidersHorizontal className="size-3.5" />
@@ -467,6 +513,7 @@ export default function App() {
                   initial={{ opacity: 0, y: -6 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.16, ease: "easeOut" }}
+                  id="filter-panel"
                   className="relative z-10 w-full min-w-0"
                 >
                   <Toolbar
@@ -487,11 +534,11 @@ export default function App() {
           </div>
 
           {loading ? (
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+            <div className={GRID}>
               {Array.from({ length: 6 }).map((_, index) => (
                 <div key={index} className="rounded-xl border p-5">
                   <div className="flex items-center gap-3">
-                    <Skeleton className="size-10 rounded-[10px]" />
+                    <Skeleton className="size-10 rounded-lg" />
                     <div className="flex-1 space-y-2">
                       <Skeleton className="h-4 w-2/3" />
                       <Skeleton className="h-3 w-1/2" />
@@ -504,11 +551,10 @@ export default function App() {
               ))}
             </div>
           ) : rows.length ? (
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
-              {rows.map((plugin, index) => (
+            <div className={GRID}>
+              {rows.map((plugin) => (
                 <PluginCard
-                  key={`${plugin.provider}:${plugin.owner}/${plugin.repo}`}
-                  index={index}
+                  key={pluginKey(plugin)}
                   plugin={plugin}
                   starred={isStarred(plugin)}
                   onToggleStar={toggleStar}
@@ -529,7 +575,7 @@ export default function App() {
               </span>
               <p className="mt-4 font-medium">{hasFilters ? "没有匹配的插件" : "这里还没有插件"}</p>
               <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-                {hasFilters ? "换个关键词，或切回「全部」。" : "先跑 npm run data 生成快照，或点右上角「同步」。"}
+                {hasFilters ? "换个关键词，或切回「全部」。" : "暂时没拿到插件列表，点右上角的「同步」再试一次。"}
               </p>
               {hasFilters && (
                 <Button
@@ -539,7 +585,7 @@ export default function App() {
                   onClick={() => {
                     setQuery("");
                     setFilter("all");
-                    setOwnerFilter(null);
+                
                   }}
                 >
                   清除筛选
@@ -563,7 +609,7 @@ export default function App() {
             <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
               {authorGroups.map((group) => (
                 <div key={group.provider} className="flex min-w-0 max-w-full flex-wrap items-center gap-2">
-                  <span className="text-[10px] uppercase tracking-wide text-muted-foreground/60">{group.provider}</span>
+                  <span className="text-[10px] uppercase tracking-wide text-muted-foreground">{group.provider}</span>
                   <div className="flex min-w-0 flex-wrap items-center gap-2">
                     {group.items.map((item) => (
                       <a
@@ -575,13 +621,10 @@ export default function App() {
                         }
                         target="_blank"
                         rel="noreferrer"
-                        className={cn(
-                          "inline-flex items-center gap-1.5 rounded-full border px-2 py-1 transition-colors hover:text-foreground",
-                          ownerFilter === `${item.provider}:${item.owner}` && "border-primary/40 text-foreground"
-                        )}
+                        className="inline-flex max-w-[12rem] items-center gap-1.5 rounded-full border px-2 py-1 transition-colors hover:text-foreground"
                       >
                         <AuthorAvatar src={item.avatar} name={item.owner} className="size-5 rounded-full" />
-                        {item.owner}
+                        <span className="truncate">{item.owner}</span>
                       </a>
                     ))}
                   </div>

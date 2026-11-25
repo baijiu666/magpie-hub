@@ -11,7 +11,7 @@ createRoot(document.getElementById("root")!).render(
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
       <MotionConfig reducedMotion="user">
         <App />
-        <Toaster position="bottom-center" />
+        <Toaster position="top-center" />
       </MotionConfig>
     </ThemeProvider>
   </StrictMode>

@@ -13,6 +13,16 @@ function scrollToY(target: number) {
   const distance = Math.abs(target - from);
   if (distance < 2) return;
 
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    const root = document.documentElement;
+    const previous = root.style.scrollBehavior;
+    root.style.scrollBehavior = "auto";
+    root.scrollTop = target;
+    document.body.scrollTop = target;
+    root.style.scrollBehavior = previous;
+    return;
+  }
+
   // 动画期间关掉 CSS smooth，否则每帧写 scrollTop 会和浏览器自己的平滑滚动打架
   const previousBehavior = root.style.scrollBehavior;
   root.style.scrollBehavior = "auto";
@@ -52,7 +62,7 @@ function scrollToY(target: number) {
 
 /** 右下角悬浮的「回到顶部 / 到最底部」按钮，页面不够长时自动隐藏。 */
 export function ScrollButtons() {
-  const [state, setState] = useState({ scrollable: true, atTop: false, atBottom: false });
+  const [state, setState] = useState({ scrollable: true, atTop: false, atBottom: false, gateOpen: false });
 
   useEffect(() => {
     const update = () => {
@@ -62,10 +72,14 @@ export function ScrollButtons() {
       const scrollable = max > 160;
       const atTop = y < 8;
       const atBottom = y > max - 8;
+      const gateOpen = Boolean(document.getElementById("intro-gate"));
       setState((previous) =>
-        previous.scrollable === scrollable && previous.atTop === atTop && previous.atBottom === atBottom
+        previous.scrollable === scrollable &&
+        previous.atTop === atTop &&
+        previous.atBottom === atBottom &&
+        previous.gateOpen === gateOpen
           ? previous
-          : { scrollable, atTop, atBottom }
+          : { scrollable, atTop, atBottom, gateOpen }
       );
     };
     update();
@@ -80,7 +94,8 @@ export function ScrollButtons() {
     };
   }, []);
 
-  if (!state.scrollable) return null;
+  // 公告打开时把按钮收起来，别成为键盘逃逸口
+  if (state.gateOpen || !state.scrollable) return null;
 
   return (
     <div className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] right-3 z-40 flex flex-col gap-2 sm:right-6">

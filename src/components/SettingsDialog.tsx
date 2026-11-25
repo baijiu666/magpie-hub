@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Database, Plus, RotateCcw, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import type { Provider } from "@/lib/data";
+import { ownerKey } from "@/lib/keys";
 
 export interface SourceConfig {
   provider: Provider;
@@ -36,7 +37,7 @@ interface SettingsDialogProps {
   onOpenChange: (open: boolean) => void;
   sources: SourceConfig[];
   liveOnLoad: boolean;
-  onSave: (sources: SourceConfig[], liveOnLoad: boolean) => void;
+  onSave: (sources: SourceConfig[], liveOnLoad: boolean) => Promise<void> | void;
   onReset: () => void;
 }
 
@@ -51,6 +52,8 @@ export function SettingsDialog({
   const [draft, setDraft] = useState<SourceConfig[]>(sources);
   const [draftLive, setDraftLive] = useState(liveOnLoad);
   const [input, setInput] = useState("");
+  const [saving, setSaving] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (open) {
@@ -70,12 +73,7 @@ export function SettingsDialog({
       toast.error("Gitee 作者要写进 config.json 再跑 npm run data");
       return;
     }
-    if (
-      draft.some(
-        (item) =>
-          item.provider === parsed.provider && item.owner.toLowerCase() === parsed.owner.toLowerCase()
-      )
-    ) {
+    if (draft.some((item) => ownerKey(item.provider, item.owner) === ownerKey(parsed.provider, parsed.owner))) {
       toast.error("这个作者已经在列表里了");
       return;
     }
@@ -86,8 +84,14 @@ export function SettingsDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
+        ref={contentRef}
+        tabIndex={-1}
         className="max-h-[88dvh] overflow-y-auto p-4 sm:max-w-md sm:p-6"
-        onOpenAutoFocus={(event) => event.preventDefault()}
+        onOpenAutoFocus={(event) => {
+          // 不聚焦输入框（手机弹键盘），但把焦点移进弹窗，读屏能读到标题
+          event.preventDefault();
+          window.setTimeout(() => contentRef.current?.focus(), 20);
+        }}
       >
         <DialogHeader>
           <DialogTitle>设置</DialogTitle>
@@ -96,7 +100,7 @@ export function SettingsDialog({
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label>作者来源</Label>
+            <Label htmlFor="add-author">作者来源</Label>
             <ul className="space-y-2">
               {draft.length === 0 && (
                 <li className="rounded-lg border border-dashed px-3 py-2 text-xs text-muted-foreground">还没有作者</li>
@@ -118,11 +122,7 @@ export function SettingsDialog({
                     onClick={() =>
                       setDraft(
                         draft.filter(
-                          (item) =>
-                            !(
-                              item.provider === source.provider &&
-                              item.owner.toLowerCase() === source.owner.toLowerCase()
-                            )
+                          (item) => ownerKey(item.provider, item.owner) !== ownerKey(source.provider, source.owner)
                         )
                       )
                     }
@@ -135,6 +135,8 @@ export function SettingsDialog({
 
             <div className="flex gap-2">
               <Input
+                id="add-author"
+                aria-label="添加作者"
                 value={input}
                 onChange={(event) => setInput(event.target.value)}
                 onKeyDown={(event) => {
@@ -167,13 +169,31 @@ export function SettingsDialog({
         </div>
 
         <DialogFooter className="sticky bottom-0 -mx-4 -mb-4 flex-row items-center justify-between gap-2 border-t bg-card px-4 py-3 sm:-mx-6 sm:-mb-6">
-          <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={onReset}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-muted-foreground"
+            onClick={() => {
+              if (window.confirm("清除所有本地设置（作者、收藏、公告记录）并刷新？")) onReset();
+            }}
+          >
             <RotateCcw className="size-4" />
             清除本地数据
           </Button>
-          <Button size="sm" disabled={draft.length === 0} onClick={() => onSave(draft, draftLive)}>
-            <Database className="size-4" />
-            保存并同步
+          <Button
+            size="sm"
+            disabled={saving || draft.length === 0}
+            onClick={async () => {
+              setSaving(true);
+              try {
+                await onSave(draft, draftLive);
+              } finally {
+                setSaving(false);
+              }
+            }}
+          >
+            <Database className={saving ? "size-4 animate-pulse" : "size-4"} />
+            {saving ? "同步中…" : "保存并同步"}
           </Button>
         </DialogFooter>
       </DialogContent>
