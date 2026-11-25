@@ -61,6 +61,7 @@ export default function App() {
   const [panelExpanded, setPanelExpanded] = useState(false);
   const [scrolledDown, setScrolledDown] = useState(false);
   const [forceCollapsed] = useState(() => new URLSearchParams(location.search).get("panel") === "collapsed");
+  const expandedAt = useRef(0);
 
   // 手机 / 平板：没有本机 magpie，一键安装只能退回复制命令
   const isMobile = useMemo(() => {
@@ -102,9 +103,9 @@ export default function App() {
       lastY = y;
       setScrolledDown(y > 200);
       if (y < 60) {
-        setPanelExpanded(false);
-      } else if (y > 200 && delta > 2) {
-        // 展开过一次也没用：继续往下滑就重新收成一条
+        if (!forceCollapsed) setPanelExpanded(false);
+      } else if (y > 200 && delta > 6 && Date.now() - expandedAt.current > 800) {
+        // 展开后 800ms 内不动它，避免刚展开就被自己的滚动事件收起（抽搐）
         setPanelExpanded(false);
       }
     };
@@ -378,7 +379,7 @@ export default function App() {
 
   const hasFilters = filter !== "all" || query.trim().length > 0 || ownerFilter !== null;
   const sample = visible.find((plugin) => !plugin.paused) ?? visible[0];
-  const collapsed = (forceCollapsed || scrolledDown) && !panelExpanded;
+  const collapsed = (scrolledDown || forceCollapsed) && !panelExpanded;
   const activeOwner = ownerFilter?.split(":")[1] ?? null;
 
   return (
@@ -440,31 +441,33 @@ export default function App() {
             data-collapsed={collapsed}
             data-scrolled={scrolledDown}
           >
-            {collapsed ? (
-                <motion.button
-                  key="mini"
-                  type="button"
-                  initial={{ opacity: 0, y: -6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.16, ease: "easeOut" }}
-                  onClick={() => setPanelExpanded(true)}
-                  className="flex h-10 w-full items-center gap-2 rounded-full border bg-card px-3.5 text-xs text-muted-foreground shadow-sm"
-                >
-                  <SlidersHorizontal className="size-3.5" />
-                  <span className="truncate text-foreground">
-                    {LABEL_OF(filter)}
-                    {activeOwner ? ` · @${activeOwner}` : ""}
-                    {query.trim() ? ` · “${query.trim()}”` : ""}
-                  </span>
-                  <span className="tabular-nums opacity-60">{rows.length} 个</span>
-                  <ChevronDown className="ml-auto size-4 shrink-0" />
-                </motion.button>
-              ) : (
+            <div className="relative">
+              {collapsed && (
+              <button
+                type="button"
+                onClick={() => {
+                  expandedAt.current = Date.now();
+                  setPanelExpanded(true);
+                }}
+                className="flex h-10 w-full items-center gap-2 rounded-full border bg-card px-3.5 text-xs text-muted-foreground shadow-sm"
+              >
+                <SlidersHorizontal className="size-3.5" />
+                <span className="truncate text-foreground">
+                  {LABEL_OF(filter)}
+                  {activeOwner ? ` · @${activeOwner}` : ""}
+                  {query.trim() ? ` · “${query.trim()}”` : ""}
+                </span>
+                <span className="tabular-nums opacity-60">{rows.length} 个</span>
+                <ChevronDown className="ml-auto size-4 shrink-0" />
+              </button>
+              )}
+
+              {!collapsed && (
                 <motion.div
-                  key="full"
                   initial={{ opacity: 0, y: -6 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.16, ease: "easeOut" }}
+                  className="relative z-10 w-full min-w-0"
                 >
                   <Toolbar
                     query={query}
@@ -480,6 +483,7 @@ export default function App() {
                   />
                 </motion.div>
               )}
+            </div>
           </div>
 
           {loading ? (
@@ -558,9 +562,9 @@ export default function App() {
             </a>
             <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
               {authorGroups.map((group) => (
-                <div key={group.provider} className="flex items-center gap-2">
+                <div key={group.provider} className="flex min-w-0 max-w-full flex-wrap items-center gap-2">
                   <span className="text-[10px] uppercase tracking-wide text-muted-foreground/60">{group.provider}</span>
-                  <div className="flex items-center gap-2">
+                  <div className="flex min-w-0 flex-wrap items-center gap-2">
                     {group.items.map((item) => (
                       <a
                         key={`${item.provider}:${item.owner}`}

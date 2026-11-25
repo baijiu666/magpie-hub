@@ -86,6 +86,8 @@
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
+    /* 筛选栏展开/收起会改高度，关掉滚动锚定避免页面跟着跳 */
+    overflow-anchor: none;
   }
   @media (prefers-reduced-motion: reduce) {
     html {
