@@ -22,6 +22,7 @@ const config = siteConfig as {
   sources: { provider: "github" | "gitee"; owner?: string; repo?: string }[];
   include: string[];
   exclude: string[];
+  repoUrl?: string;
   liveOnLoad: boolean;
   gateSeconds: number;
 };
@@ -116,7 +117,8 @@ export default function App() {
     };
   }, []);
 
-  const primaryOwner = sources.find((source) => source.provider === "github")?.owner ?? null;
+  const siteRepo = config.repoUrl ?? "https://github.com/baijiu666/magpie-hub";
+  const siteRepoOwner = siteRepo.split("/").filter(Boolean).slice(-2, -1)[0] ?? "repo";
   const avatarMap = useMemo(
     () => new Map(authors.map((author) => [`${author.provider}:${author.owner.toLowerCase()}`, author.avatar])),
     [authors]
@@ -402,19 +404,17 @@ export default function App() {
             </a>
 
             <div className="ml-auto flex items-center gap-1.5">
-              {primaryOwner && (
-                <Button
+              <Button
                   variant="ghost"
                   size="sm"
                   className="hidden gap-1.5 px-2 text-muted-foreground min-[380px]:inline-flex"
                   asChild
                 >
-                  <a href={`https://github.com/${primaryOwner}`} target="_blank" rel="noreferrer" aria-label="GitHub">
+                  <a href={siteRepo} target="_blank" rel="noreferrer" aria-label="打开站点仓库">
                     <GithubMark className="size-4" />
-                    <span className="hidden sm:inline">@{primaryOwner}</span>
+                    <span className="hidden sm:inline">@{siteRepoOwner}</span>
                   </a>
-                </Button>
-              )}
+              </Button>
               <Button variant="outline" size="sm" onClick={() => sync()} disabled={syncing} className="px-2 sm:px-3">
                 {syncing ? <Loader2 className="size-4 animate-spin" /> : <RefreshCw className="size-4" />}
                 <span className="hidden min-[380px]:inline">同步</span>

@@ -208,10 +208,10 @@ export function IntroGate({ seconds, sample, canOpenInMagpie, isMobile }: IntroG
                       className="size-8 shrink-0"
                       aria-label={onNpm && canOpenInMagpie ? "在 magpie 中安装" : "安装（复制命令）"}
                       disabled={!hasSample}
-                      title={onNpm && canOpenInMagpie ? "在 magpie 中打开，按 Install" : "复制安装命令"}
+                      title={onNpm && canOpenInMagpie ? "在 magpie 中打开，按 Install" : "未发布到 npm，点击复制命令"}
                       onClick={installNow}
                     >
-                      <AppWindow className="size-3.5" />
+                      {onNpm && canOpenInMagpie ? <AppWindow className="size-3.5" /> : <Copy className="size-3.5" />}
                     </Button>
                   </div>
                   {onNpm && canOpenInMagpie && (

@@ -23,5 +23,6 @@
     "doubao-work-gateway"
   ],
   "liveOnLoad": false,
-  "gateSeconds": 10
+  "gateSeconds": 10,
+  "repoUrl": "https://github.com/baijiu666/magpie-hub"
 }

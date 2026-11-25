@@ -73,7 +73,6 @@ function PluginCardBase({ plugin, starred, onToggleStar, canOpenInMagpie, isMobi
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.28, delay: Math.min(index * 0.018, 0.36), ease: [0.22, 1, 0.36, 1] }}
-      whileHover={{ y: -3 }}
       whileTap={{ scale: 0.995 }}
       className="h-full"
     >
@@ -154,27 +153,33 @@ function PluginCardBase({ plugin, starred, onToggleStar, canOpenInMagpie, isMobi
       </CardContent>
 
       <CardFooter className="mt-auto flex-col items-stretch gap-2.5 px-4 pb-4 pt-0 sm:px-5 sm:pb-5">
-        <code className="block rounded-md bg-muted px-2.5 py-1.5 font-mono text-[0.7rem] leading-snug text-muted-foreground">
+        <button
+          type="button"
+          onClick={copyInstall}
+          title="点击复制安装命令"
+          aria-label="点击复制安装命令"
+          className="group/code block w-full rounded-md border border-transparent bg-muted px-2.5 py-1.5 text-left font-mono text-[0.7rem] leading-snug text-muted-foreground transition-colors hover:border-primary/40 hover:bg-muted/70 active:scale-[0.995]"
+        >
           <span className="block text-[0.65rem] opacity-70">magpie plugin add</span>
-          <span className="block truncate text-foreground/80">{target}</span>
-        </code>
+          <span className="flex items-center gap-1.5">
+            <span className="truncate text-foreground/80">{target}</span>
+            <motion.span
+              key={copied ? "yes" : "no"}
+              initial={{ scale: 0.6, opacity: 0.5 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="ml-auto inline-flex shrink-0 items-center gap-1 text-[0.65rem] text-primary"
+            >
+              {copied ? <Check className="size-3" /> : <Copy className="size-3 opacity-0 transition-opacity group-hover/code:opacity-60" />}
+              {copied ? "已复制" : ""}
+            </motion.span>
+          </span>
+        </button>
         <div className="flex items-center justify-between gap-2">
           <span className="truncate text-[0.7rem] text-muted-foreground/80">
             更新于 {formatDate(plugin.updatedAt)}
             {plugin.stars > 0 ? ` · ★ ${plugin.stars}` : ""}
           </span>
           <div className="flex shrink-0 items-center gap-1">
-            <Button
-              variant="secondary"
-              size="sm"
-              className="h-7 gap-1 px-2 text-xs"
-              onClick={copyInstall}
-            >
-              <motion.span key={copied ? "yes" : "no"} initial={{ scale: 0.7, opacity: 0.6 }} animate={{ scale: 1, opacity: 1 }} className="inline-flex">
-                {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
-              </motion.span>
-              {copied ? "已复制" : "复制"}
-            </Button>
             <Button
               variant="outline"
               size="icon"
@@ -191,7 +196,7 @@ function PluginCardBase({ plugin, starred, onToggleStar, canOpenInMagpie, isMobi
                       : "未发布到 npm，点击复制命令"
               }
             >
-              <AppWindow className="size-3.5" />
+              {onNpm ? <AppWindow className="size-3.5" /> : <Copy className="size-3.5" />}
             </Button>
             <Button variant="ghost" size="icon" className="size-7" asChild>
               <a href={repoUrl} target="_blank" rel="noreferrer" aria-label="打开 GitHub 仓库">
