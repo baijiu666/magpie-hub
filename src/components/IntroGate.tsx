@@ -226,8 +226,14 @@ export function IntroGate({ seconds, sample, canOpenInMagpie, isMobile }: IntroG
                       {onNpm && canOpenInMagpie ? <AppWindow className="size-3.5" /> : <Copy className="size-3.5" />}
                     </Button>
                   </div>
-                  {onNpm && canOpenInMagpie && (
+                  {onNpm && canOpenInMagpie ? (
                     <p className="text-xs text-muted-foreground">右侧按钮会在 magpie 里打开插件页，按 Install 完成。</p>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      {onNpm
+                        ? "手机/平板没有本机 magpie：复制命令，在装了 magpie 的终端里执行。"
+                        : "这个插件没发布到 npm，magpie 的深链只认 npm 包名，只能复制命令安装。"}
+                    </p>
                   )}
                 </section>
 
