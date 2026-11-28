@@ -23,6 +23,28 @@
   "plugins": [
     {
       "provider": "github",
+      "owner": "MYCF711",
+      "repo": "magpie-trustoken-auth",
+      "host": "github.com",
+      "repoUrl": "https://github.com/MYCF711/magpie-trustoken-auth",
+      "displayName": "爱派 AiPy",
+      "description": "Trustoken / AiPy for magpie — phone-code sign-in, the account's live model list, 灵石 balance, auto check-in and daily-task rewards. DeepSeek / Qwen / GLM / Doubao / Kimi / Hunyuan.",
+      "summary": "用手机号验证码登录 爱派 AiPy，自动签到、领每日任务灵石、滚动邀请码，模型目录按账号实时拉取。",
+      "version": "0.4.11",
+      "npmName": "magpie-trustoken-auth",
+      "providers": [
+        "trustoken"
+      ],
+      "paused": false,
+      "stars": 0,
+      "topics": [],
+      "updatedAt": "2026-11-28T14:52:07Z",
+      "npmVersion": "0.4.11",
+      "icon": "data/icons/github-MYCF711-magpie-trustoken-auth.png",
+      "install": "magpie plugin add github:MYCF711/magpie-trustoken-auth"
+    },
+    {
+      "provider": "github",
       "owner": "3294798852",
       "repo": "magpie-doubao-work",
       "host": "github.com",
@@ -30,7 +52,7 @@
       "displayName": "Magpie 豆包工作插件 / Doubao Work Plugin",
       "description": "Magpie 豆包 / 豆包工作 / Doubao Work provider plugin with browser login, OpenAI text streaming, function tools, quotas and daily check-in.",
       "summary": "Magpie 豆包 / 豆包工作 / Doubao Work provider plugin with browser login, OpenAI text streaming, function tools, quotas and daily check-in.",
-      "version": "0.6.4",
+      "version": "0.6.5",
       "npmName": "magpie-doubao-work",
       "providers": [],
       "paused": false,
@@ -57,7 +79,7 @@
         "streaming",
         "windows"
       ],
-      "updatedAt": "2026-11-26T17:24:22Z",
+      "updatedAt": "2026-11-28T11:13:02Z",
       "npmVersion": null,
       "icon": "data/icons/github-3294798852-magpie-doubao-work.png",
       "install": "magpie plugin add github:3294798852/magpie-doubao-work"
@@ -93,28 +115,6 @@
       "npmVersion": null,
       "icon": "data/icons/github-MYCF711-magpie-officeace.png",
       "install": "magpie plugin add github:MYCF711/magpie-officeace"
-    },
-    {
-      "provider": "github",
-      "owner": "MYCF711",
-      "repo": "magpie-trustoken-auth",
-      "host": "github.com",
-      "repoUrl": "https://github.com/MYCF711/magpie-trustoken-auth",
-      "displayName": "爱派 AiPy",
-      "description": "Trustoken / AiPy for magpie — phone-code sign-in, the account's live model list, 灵石 balance, auto check-in and daily-task rewards. DeepSeek / Qwen / GLM / Doubao / Kimi / Hunyuan.",
-      "summary": "用手机号验证码登录 爱派 AiPy，自动签到、领每日任务灵石、滚动邀请码，模型目录按账号实时拉取。",
-      "version": "0.4.8",
-      "npmName": "magpie-trustoken-auth",
-      "providers": [
-        "trustoken"
-      ],
-      "paused": false,
-      "stars": 0,
-      "topics": [],
-      "updatedAt": "2026-11-24T09:11:40Z",
-      "npmVersion": "0.4.1",
-      "icon": "data/icons/github-MYCF711-magpie-trustoken-auth.png",
-      "install": "magpie plugin add github:MYCF711/magpie-trustoken-auth"
     },
     {
       "provider": "github",
@@ -233,7 +233,7 @@
         "croli"
       ],
       "paused": false,
-      "stars": 5,
+      "stars": 6,
       "topics": [
         "claude",
         "croli",
@@ -322,7 +322,7 @@
         "marvis"
       ],
       "paused": true,
-      "stars": 41,
+      "stars": 40,
       "topics": [
         "deepseek",
         "magpie-plugin",
